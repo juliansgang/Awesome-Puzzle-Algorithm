@@ -63,27 +63,36 @@ int getCurrentOrientationNum(List* list){
 
 /*-------space functions------*/
 
-enum{SIZE=sizeof(int)*3*3*3, NUMPIECES = 5, NUMORI = 6};
+enum{SIZE=sizeof(int)*3*3*3, NUMPIECES = 3, NUMORI = 1};
 
-typedef int* Piece[6];
+typedef int*** Piece[6];
 typedef Piece* Pieces[NUMPIECES];
 
 
 
-int* makeSpace(){
-	int* temp = calloc(1, sizeof(int)*3*3*3);
-	return temp;
+int*** makeSpace(){
+	int* values = calloc(3*3*3, sizeof(int));
+    int** rows = malloc(3*3*sizeof(int*));
+	int*** levels = malloc(3*sizeof(int**));
+	for (int j=0; j<3; ++j){
+		levels[j] = rows + j*3;
+		for (int i=0; i<3; ++i){
+			rows[j*3+i] = values + j*9 + i*3;
+		}
+	}
+	
+    return levels;
 }
 
-int getBlock(int* s, int x, int y, int z){
+int getBlock(int*** s, int x, int y, int z){
 	if(x<3&&y<3&&z<3){
-		return s[(y*9+x*3+z)];
+		return s[y][x][z];
 	}
 	return 0;
 }
 
-int* setBlock(int* s, int x, int y, int z, int set){
-	s[(y*9+x*3+z)] = set;
+int*** setBlock(int*** s, int x, int y, int z, int set){
+	s[y][x][z] = set;
 	return s;
 }
 
@@ -96,11 +105,11 @@ Piece* makePiece(){
 
 }
 
-int* getOrientation(Piece* p, int i){
+int*** getOrientation(Piece* p, int i){
 	return (*p)[i];
 }
 
-int* populateSpace(int* s, char* in){
+int*** populateSpace(int*** s, char* in){
 	for(int i = 0; i<3*3*3;i++){
 		if(in[i]=='1'){
 			int x = ((i%9)/3);
@@ -112,41 +121,37 @@ int* populateSpace(int* s, char* in){
 	return s;
 }
 
-int height(int* s){
+int height(int*** s){
 	for(int x = 0; x<9; x++){
-		if(s[18+x] == 1){return 2;}
+		if(s[2][x/3][x%3] == 1){return 2;}
 	}
 	for(int x = 0; x<9; x++){
-		if(s[9+x] == 1){return 1;}
+		if(s[1][x/3][x%3] == 1){return 1;}
 	}
 	return 0;
 }
 
-int width(int* s){
-	for(int x = 6; x<25; x=x+9){
-		for(int y = 0; y<3; y++){
-			if(s[y+x] == 1){return 2;}
-		}
+int width(int*** s){
+	for(int x = 0; x<9; x++){
+		if(s[x/3][2][x%3] == 1){return 2;}
 	}
-	for(int x = 3; x<22; x=x+9){
-		for(int y = 0; y<3; y++){
-			if(s[y+x] == 1){return 1;}
-		}
+	for(int x = 0; x<9; x++){
+		if(s[x/3][1][x%3] == 1){return 1;}
 	}
 	return 0;
 }
 
-int depth(int* s){
-	for(int x = 2; x<27; x=x+3){
-		if(s[x] == 1){return 2;}
+int depth(int*** s){
+	for(int x = 0; x<9; x++){
+		if(s[x/3][x%3][2] == 1){return 2;}
 	}
-	for(int x = 1; x<26; x=x+3){
-		if(s[x] == 1){return 1;}
+	for(int x = 0; x<9; x++){
+		if(s[x/3][x%3][1] == 1){return 1;}
 	}
 	return 0;
 }
 
-int doesItFit(int* puzzleSpace, int* in, int i){
+int doesItFit(int*** puzzleSpace, int*** in, int i){
 	int x = ((i%9)/3);
 	int y = (i/9);
 	int z = (i%3);
@@ -163,7 +168,7 @@ int doesItFit(int* puzzleSpace, int* in, int i){
 	
 }
 
-void removePieceFromPuzzle(int* puz, int* piece){
+void removePieceFromPuzzle(int*** puz, int*** piece){
 	for(int y = 0; y<3; y++){
 		for(int x = 0; x<3; x++){
 			for(int z = 0; z<3; z++){
@@ -175,7 +180,7 @@ void removePieceFromPuzzle(int* puz, int* piece){
 	}
 }
 
-void addPieceToPuzzle(int* puz, int* piece, int i){
+void addPieceToPuzzle(int*** puz, int*** piece, int i){
 	
 	int xo = ((i%9)/3);
 	int yo = (i/9);
@@ -194,7 +199,7 @@ void addPieceToPuzzle(int* puz, int* piece, int i){
 }
 
 
-void printSpace(int* in){
+void printSpace(int*** in){
 	printf("{\n");
 	for(int y = 0; y<3; y++){
 		printf("{\n");
@@ -213,6 +218,14 @@ void printSpace(int* in){
 }
 
 int main(){
+	
+	/*
+	int*** bla = makeSpace();
+	bla = setBlock(bla, 0, 0, 0, 1);
+	printSpace(bla);
+	printf("done");*/
+	
+	
 	
 	//make array to hold all pieces	
 	Pieces* pieces = calloc(1, sizeof(Pieces*)*NUMPIECES);
@@ -250,7 +263,7 @@ int main(){
 	}
 	
 	//our puzzle space to store completed puzzle
-	int* puzzleSpace = makeSpace();
+	int*** puzzleSpace = makeSpace();
 	
 	//flag for when fitting piece is found
 	int next = 0;
@@ -294,7 +307,7 @@ int main(){
 			}
 			if(next){break;}
 			
-			if(getCurrentOrientationNum(currentStatus)<6){
+			if(getCurrentOrientationNum(currentStatus)<NUMORI){
 				//move to next orientation.
 				updateHeadListItem(currentStatus, getCurrentPieceNum(currentStatus), getCurrentOrientationNum(currentStatus)+1, 0);
 			}else{
