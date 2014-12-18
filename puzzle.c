@@ -62,7 +62,7 @@ int main(){
 	//our puzzle space to store completed puzzle
 	int*** puzzleSpace = makeSpace();
 	
-	//flag for when fitting piece is found
+	//flag for when fitting piece is found and if there is no solution
 	int next = 0;
 	
 	//list to store backtracking data
@@ -76,44 +76,59 @@ int main(){
 		
 		//orientaion loop
 		while(1){
+			
 			printf("\tOrientation started: %d\n", getCurrentOrientationNum(currentStatus));
-			//possition loop
-			while(1){
-				printf("\t\tTest Position: %d\n", getCurrentPositionNum(currentStatus));
-				//if it fits in place. ie doesn't fall off end or overlap other pieces
-				if(doesItFit(puzzleSpace, (*(*pieces)[getCurrentPieceNum(currentStatus)])[getCurrentOrientationNum(currentStatus)], getCurrentPositionNum(currentStatus))){
-					printf("\t\t\tSuccess on position %d\n", getCurrentPositionNum(currentStatus));
-					addPieceToPuzzle(puzzleSpace,(*(*pieces)[getCurrentPieceNum(currentStatus)])[getCurrentOrientationNum(currentStatus)], getCurrentPositionNum(currentStatus));
-					//move on to placing next piece
-					add(currentStatus, getCurrentPieceNum(currentStatus)+1, 0, 0);
-					//set flag to move to next piece
-					next = 1;
-					
-					break;
-				}
-				printf("\t\t\tFailure: position %d does not work\n", getCurrentPositionNum(currentStatus));
-				if(getCurrentPositionNum(currentStatus)<26){
-					//try next position
-					updateHeadListItem(currentStatus, getCurrentPieceNum(currentStatus), getCurrentOrientationNum(currentStatus), getCurrentPositionNum(currentStatus)+1);
-				}else{
-					//if all positions tried move to next orientation.
-					updateHeadListItem(currentStatus, getCurrentPieceNum(currentStatus), getCurrentOrientationNum(currentStatus)+1, 0);
-					break;
-				}	
 			
-			}
-			if(next){break;}
 			
-			if(getCurrentOrientationNum(currentStatus)<NUMORI){
-				//move to next orientation.
-				updateHeadListItem(currentStatus, getCurrentPieceNum(currentStatus), getCurrentOrientationNum(currentStatus)+1, 0);
-			}else{
+			if(getCurrentOrientationNum(currentStatus)>=NUMORI){
 				//if all orientations tried back track
+				printf("Tried all Orientations\n");
 				break;
+			}else{
+				
+				//do the next orientation.
+				
+				//possition loop
+				while(1){
+					if(getCurrentPositionNum(currentStatus)==27){
+						//if all positions tried move to next orientation.
+						updateHeadListItem(currentStatus, getCurrentPieceNum(currentStatus), getCurrentOrientationNum(currentStatus)+1, 0);
+						break;
+					}else{
+						//try next position
+						printf("\t\tTest Position: %d\n", getCurrentPositionNum(currentStatus));
+						//if it fits in place. ie doesn't fall off end or overlap other pieces
+						if(doesItFit(puzzleSpace, (*(*pieces)[getCurrentPieceNum(currentStatus)])[getCurrentOrientationNum(currentStatus)], getCurrentPositionNum(currentStatus))){
+							printf("\t\t\tSuccess on position %d\n", getCurrentPositionNum(currentStatus));
+							addPieceToPuzzle(puzzleSpace,(*(*pieces)[getCurrentPieceNum(currentStatus)])[getCurrentOrientationNum(currentStatus)], getCurrentPositionNum(currentStatus));
+							//move on to placing next piece
+							add(currentStatus, getCurrentPieceNum(currentStatus)+1, 0, 0);
+							//set flag to move to next piece
+							next = 1;
+							break;
+						}
+						printf("\t\t\tFailure: position %d does not work\n", getCurrentPositionNum(currentStatus));
+						updateHeadListItem(currentStatus, getCurrentPieceNum(currentStatus), getCurrentOrientationNum(currentStatus), getCurrentPositionNum(currentStatus)+1);
+					}
+				}
+				if(next){break;}				
 			}
+			
 		}
-		if(next){continue;}
+		if(next){
+			next=0;
+			continue;
+		}
+		
 		//else: need to back track
+		
+		//if has finished searching all orienations and positions of the 0th piece
+		if(getCurrentPieceNum(currentStatus)==0){
+			//Finish
+			printf("Sorry there is no solution!! :-(\n");
+			return 0;
+		}
+		
 		//remove current block that has failed to be placed
 		deleteHeadListItem(currentStatus);
 		//move back to the previous block but in the next position
@@ -121,6 +136,8 @@ int main(){
 		//remove the problem piece from the puzzle space
 		removePieceFromPuzzle(puzzleSpace,(*(*pieces)[getCurrentPieceNum(currentStatus)])[getCurrentOrientationNum(currentStatus)]);
 	}
+	
+	
 	
 	//hack:delete last listItem
 	deleteHeadListItem(currentStatus);
