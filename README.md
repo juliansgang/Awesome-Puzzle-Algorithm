@@ -12,4 +12,8 @@ ____
 
 2) write a function that checks the final solution fills the 3d space.
 
-3) merge developement branch in to master branch.
+3) fix issue that, if no solution is found, the program crashes.
+
+4) merge developement branch in to master branch.
+
+
