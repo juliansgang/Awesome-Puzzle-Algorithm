@@ -4,6 +4,7 @@
 #include "linkedListLibrary.c"
 #include "basicAndInitSpaceFunctions.c"
 #include "spaceCheckingFunctions.c"
+#include "createPermeatations.c"
 
 
 int main(){
@@ -24,6 +25,8 @@ int main(){
 	//loop through pieces 
 	for(int i = 0; i<NUMPIECES; i++){
 		
+		/*
+		
 		//make a piece and put in array of pieces
 		(*pieces)[i] = makePiece(); 
 		
@@ -38,6 +41,11 @@ int main(){
 			//use string to populate each orientation of piece
 			populateSpace(getOrientation((*pieces)[i], j), c);
 		}
+		
+		*/
+		
+		(*pieces)[i] = getPieceFromUser(i);
+		
 	}
 	
 	printf("PRINT OUT OF INPUTS\n");
