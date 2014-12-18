@@ -12,8 +12,6 @@ ____
 
 2) write a function that checks the final solution fills the 3d space.
 
-3) fix issue that, if no solution is found, the program crashes.
+3) merge developement branch in to master branch.
 
-4) merge developement branch in to master branch.
-
-
+4) Write wiki
